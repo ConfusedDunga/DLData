@@ -7,7 +7,7 @@ import base64
 
 # Set up the dashboard configuration
 st.set_page_config(
-    page_title="Bank Data Dashboard",
+    page_title="NBA D/L Data Dashboard",
     page_icon="🏦",
     layout="wide",
 )
