@@ -50,6 +50,7 @@ page = st.sidebar.radio("Go to", ["Home Page", "Search DL Data", "Weekly DL Data
 
 if page == "Home Page":
     st.title("Deposit and Lending of Commercial Banks")
+    st.subheader("Compiled by Nepal Bankers' Association")
     st.header(f"As of {new_df['Description'].iloc[-1]} ({new_df['Ndate'].iloc[-1]})")
     st.write("Amounts in Rs (Billions)")
     
