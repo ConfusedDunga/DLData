@@ -87,26 +87,10 @@ if page == "Home Page":
 
     st.subheader("Latest Available Monthly PDF Report")
 
-    # Path to the local PDF file
-    pdf_path = "latest.pdf"
+    st.write("PDF Viewer")
+    pdf_url = "https://drive.google.com/file/d/1852BlIiyhyGJ3ba7OmWBTlkvkxwXYF5o/preview"
+    st.write(f'<iframe src="{pdf_url}" width="700" height="1000"></iframe>', unsafe_allow_html=True)
 
-    # Function to read PDF file as bytes
-    def get_pdf_bytes(pdf_path):
-        with open(pdf_path, "rb") as f:
-            pdf_bytes = f.read()
-        return pdf_bytes
-
-    # Get the PDF file content as bytes
-    pdf_bytes = get_pdf_bytes(pdf_path)
-
-    # Function to embed PDF file in Streamlit app
-    def embed_pdf_viewer(pdf_bytes):
-        pdf_base64 = base64.b64encode(pdf_bytes).decode("utf-8")
-        pdf_display = f'<embed src="data:application/pdf;base64,{pdf_base64}" width="700" height="1000" type="application/pdf">'
-        return pdf_display
-
-    # Display the PDF file in Streamlit
-    st.markdown(embed_pdf_viewer(pdf_bytes), unsafe_allow_html=True)
 
 
 # Search Page
