@@ -85,11 +85,12 @@ if page == "Home Page":
     with col6:
         st.metric(label="Total Lending", value=f"{latest_entry['LTOTAL']:.2f}", delta=f"{delta_LTOTAL:.2f}")
 
-    st.subheader("Latest Available Monthly PDF Reports")
+    with st.expander("Click here for Monthly PDF Report from NBA",expanded=False):
+        st.subheader("Latest Available Monthly PDF Reports")
 
-    st.write("PDF Viewer")
-    pdf_url = "https://drive.google.com/file/d/1852BlIiyhyGJ3ba7OmWBTlkvkxwXYF5o/preview"
-    st.write(f'<iframe src="{pdf_url}" width="700" height="1000"></iframe>', unsafe_allow_html=True)
+        st.write("PDF Viewer")
+        pdf_url = "https://drive.google.com/file/d/1852BlIiyhyGJ3ba7OmWBTlkvkxwXYF5o/preview"
+        st.write(f'<iframe src="{pdf_url}" width="700" height="1000"></iframe>', unsafe_allow_html=True)
 
 
 
