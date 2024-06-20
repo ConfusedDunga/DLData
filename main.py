@@ -85,7 +85,7 @@ if page == "Home Page":
     with col6:
         st.metric(label="Total Lending", value=f"{latest_entry['LTOTAL']:.2f}", delta=f"{delta_LTOTAL:.2f}")
 
-    st.subheader("Latest Available Monthly PDF Report")
+    st.subheader("Latest Available Monthly PDF Reports")
 
     st.write("PDF Viewer")
     pdf_url = "https://drive.google.com/file/d/1852BlIiyhyGJ3ba7OmWBTlkvkxwXYF5o/preview"
