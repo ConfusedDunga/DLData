@@ -72,7 +72,8 @@ with open("logo.png", "rb") as f:
     )
 # Add navigation sidebar
 st.sidebar.title("Choose an option")
-page = st.sidebar.radio("Go to", ["Home Page", "Search DL Data", "Weekly DL Data", "Monthly DL Data","BankWise DL Data"])
+page = st.sidebar.radio("Go to", ["Home Page", "Search DL Data", "Weekly DL Data", "Monthly DL Data","BankWise DL Data","CD Ratio"])
+
 if page == "Home Page":
     st.title("Deposit and Lending of Commercial Banks")
     st.subheader("Compiled by Nepal Bankers' Association")
@@ -482,7 +483,7 @@ elif page == "Monthly DL Data":
 elif page == "BankWise DL Data":
     st.title("BankWise Data")
     with st.expander("Click here for latest Monthly DL Data"):
-        st.header(f"As of {month_df['Description'].iloc[-1]} ({month_df['Ndate'].iloc[-1]})")
+       
         end_df=df[df["type"]=="End"]
         
         # Find the last year and month in the DataFrame
@@ -492,6 +493,7 @@ elif page == "BankWise DL Data":
         # Create the selectboxes
         chosen_year = st.selectbox("Choose Year", end_df['Year'].unique(), index=list(end_df['Year'].unique()).index(last_year))
         chosen_month = st.selectbox("Choose Month", end_df['Month'].unique(), index=list(end_df['Month'].unique()).index(last_month))
+        st.header(f"As of {chosen_year} {chosen_month}")
 
         # Filter the DataFrame for entries with the chosen year and month
         selected_date_entries = end_df[(end_df["Year"] == chosen_year) & (end_df["Month"] == chosen_month)]
@@ -674,3 +676,5 @@ elif page == "BankWise DL Data":
                 ),
             },
         )
+elif page =="CD Ratio":
+    st.title("Credit to Deposit Ratio")
