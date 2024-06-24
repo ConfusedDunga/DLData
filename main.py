@@ -1,5 +1,3 @@
-import time
-import numpy as np
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -44,15 +42,43 @@ mask_week=new_df["type"]=="Week"
 week_df=new_df[mask_week]
 
 
+with open("logo.png", "rb") as f:
+    data = base64.b64encode(f.read()).decode("utf-8")
+
+    st.sidebar.markdown(
+        f"""
+        <style>
+            .sidebar .sidebar-content {{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }}
+            .sidebar .sidebar-content img {{
+                margin-top: 20px;
+                margin-bottom: 10px;
+                max-width: 150px; /* Adjust the max-width as needed */
+                height: auto; /* Maintain aspect ratio */
+            }}
+        </style>
+        <div class="sidebar">
+            <div class="sidebar-content">
+                <img src="data:image/png;base64,{data}" alt="Logo">
+                <h4>Nepal Bankers' Association</h4>
+                <p>Compiled by NBA</p>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 # Add navigation sidebar
 st.sidebar.title("Choose an option")
 page = st.sidebar.radio("Go to", ["Home Page", "Search DL Data", "Weekly DL Data", "Monthly DL Data","BankWise DL Data"])
-
 if page == "Home Page":
     st.title("Deposit and Lending of Commercial Banks")
     st.subheader("Compiled by Nepal Bankers' Association")
     st.header(f"As of {new_df['Description'].iloc[-1]} ({new_df['Ndate'].iloc[-1]})")
     st.write("Amounts in Rs (Billions)")
+    st.write("Metrics are compared from previous week data")
     
     # Convert all numeric columns to float
     numeric_columns = ['DLCY', 'DFCY', 'DTOTAL', 'LLCY', 'LFCY', 'LTOTAL']
@@ -88,19 +114,40 @@ if page == "Home Page":
 
     with st.expander("Click here for Monthly PDF Report from NBA",expanded=False):
         st.subheader("Latest Available Monthly PDF Reports")
-
-        st.write("PDF Viewer")
-        pdf_url = "https://drive.google.com/file/d/1852BlIiyhyGJ3ba7OmWBTlkvkxwXYF5o/preview"
-        st.write(f'<iframe src="{pdf_url}" width="700" height="1000"></iframe>', unsafe_allow_html=True)
+        st.image(image="latest.png",use_column_width=True)
 
 
 
 # Search Page
 elif page == "Search DL Data":
     st.title("Search Data")
+    st.markdown("""
+
+    Enter a keyword in the search box below to filter the data based on the description. You can use partial or full words to search. For example:
+    
+    - To find entries for a specific year, type the year, either in Nepali or English Date format(e.g., '2023' or '2081').
+    - To find entries for a specific month, type the month (e.g., 'January' or 'Jan', or 'Baisakh').
+    - To find entries for a specific year and month, type both (e.g.'2081 Baisakh').
+    - To find entries for a specific year and month and week, type ('2081 Baisakh 1st Week' or '2081 Shrawan 3rd Week').
+    - Or just simply enter the date (e.g. '2024-07-24' or '3/7/2081')
+    
+    Note: The search is case-insensitive.
+    """)
+
+    new_df['Long Date'] = pd.to_datetime(new_df['Date']).dt.strftime('%B %d, %Y')
+
     search_filter = st.text_input("Search by Description")
     if search_filter:
-        filtered_df = new_df[new_df['Description'].str.contains(search_filter, case=False, na=False)]
+        filtered_df = new_df[
+            (new_df['Description'].str.contains(search_filter, case=False, na=False)) |
+            (new_df['Year'].astype(str).str.contains(search_filter, case=False, na=False)) |
+            (new_df['Month'].str.contains(search_filter, case=False, na=False)) |
+            (new_df['FY'].astype(str).str.contains(search_filter, case=False, na=False)) |
+            (new_df['Date'].astype(str).str.contains(search_filter, case=False, na=False)) |
+            (new_df['Ndate'].astype(str).str.contains(search_filter, case=False, na=False)) |
+            (new_df['Long Date'].str.contains(search_filter, case=False, na=False)) 
+            # Add more columns as needed
+        ]
         st.dataframe(
             filtered_df,
             use_container_width=True,
@@ -154,6 +201,8 @@ elif page == "Search DL Data":
             )
     else:
         st.write("Enter a search term to filter the data.")
+            # Description for search functionality
+
 
 
 
@@ -271,18 +320,18 @@ elif page == "Monthly DL Data":
 
     # Add dropdown for selecting a fiscal year for the bar chart
     fiscal_years = month_df['FY'].unique()
-    selected_fy_for_bar = st.selectbox("Select Fiscal Year for Bar Chart", fiscal_years)
+    selected_fy_for_bar = st.selectbox("Select Fiscal Year for Bar Chart", fiscal_years, index=len(fiscal_years)-1)
 
     # Filter data based on the selected fiscal year for the bar chart
     filtered_month_df_bar = month_df[month_df['FY'] == selected_fy_for_bar]
 
     # Convert 'DTOTAL' and 'LTOTAL' to numeric
-    filtered_month_df_bar['DTOTAL'] = filtered_month_df_bar['DTOTAL'].astype(float)
-    filtered_month_df_bar['LTOTAL'] = filtered_month_df_bar['LTOTAL'].astype(float)
+    filtered_month_df_bar['DTOTAL'] = month_df['DTOTAL'].astype(float)
+    filtered_month_df_bar['LTOTAL'] = month_df['LTOTAL'].astype(float)
 
     # Calculate the growth for deposits and loans
-    filtered_month_df_bar['DTOTAL Growth'] = filtered_month_df_bar['DTOTAL'].diff()
-    filtered_month_df_bar['LTOTAL Growth'] = filtered_month_df_bar['LTOTAL'].diff() 
+    filtered_month_df_bar['DTOTAL Growth'] = month_df['DTOTAL'].diff()
+    filtered_month_df_bar['LTOTAL Growth'] = month_df['LTOTAL'].diff() 
 
     # Melt the DataFrame and rename the values in the 'Total Type' column
     df_melted = filtered_month_df_bar.melt(id_vars='Month', value_vars=['DTOTAL Growth', 'LTOTAL Growth'], var_name='Total Type', value_name='Growth')
@@ -321,18 +370,18 @@ elif page == "Monthly DL Data":
     st.plotly_chart(fig, use_container_width=True)
 
     # Add multiselect for selecting fiscal years for the line charts
-    selected_fys_for_line = st.multiselect("Select Fiscal Years for Line Charts", fiscal_years, default=fiscal_years[:1])
+    selected_fys_for_line = st.multiselect("Select Fiscal Years for Line Charts", fiscal_years, default=fiscal_years[1])
 
     # Filter data based on the selected fiscal years for the line charts
     filtered_month_df_line = month_df[month_df['FY'].isin(selected_fys_for_line)]
 
     # Convert 'DTOTAL' and 'LTOTAL' to numeric
-    filtered_month_df_line['DTOTAL'] = filtered_month_df_line['DTOTAL'].astype(float)
-    filtered_month_df_line['LTOTAL'] = filtered_month_df_line['LTOTAL'].astype(float)
+    filtered_month_df_line['DTOTAL'] = month_df['DTOTAL'].astype(float)
+    filtered_month_df_line['LTOTAL'] = month_df['LTOTAL'].astype(float)
     if not filtered_month_df_line.empty:
         # Calculate percentage change for DTOTAL and LTOTAL
-        filtered_month_df_line['DTOTAL Growth'] = filtered_month_df_line['DTOTAL'].pct_change() * 100
-        filtered_month_df_line['LTOTAL Growth'] = filtered_month_df_line['LTOTAL'].pct_change() * 100
+        filtered_month_df_line['DTOTAL Growth'] = month_df['DTOTAL'].pct_change() * 100
+        filtered_month_df_line['LTOTAL Growth'] = month_df['LTOTAL'].pct_change() * 100
 
         # Replace NaN values with 0 or a suitable value
         filtered_month_df_line['DTOTAL Growth'].fillna(0, inplace=True)
@@ -432,19 +481,20 @@ elif page == "Monthly DL Data":
 
 elif page == "BankWise DL Data":
     st.title("BankWise Data")
-    with st.expander("Click here for latest DL Data"):
-        st.header(f"As of {new_df['Description'].iloc[-1]} ({new_df['Ndate'].iloc[-1]})")
-        # Find the maximum date in new_df
-        df["Date"] = pd.to_datetime(df["Date"]).dt.date
-        max_date = df["Date"].max()
+    with st.expander("Click here for latest Monthly DL Data"):
+        st.header(f"As of {month_df['Description'].iloc[-1]} ({month_df['Ndate'].iloc[-1]})")
+        end_df=df[df["type"]=="End"]
+        
+        # Find the last year and month in the DataFrame
+        last_year = end_df['Year'].iloc[-1]
+        last_month = end_df['Month'].iloc[-1]
 
-        st.write("or")
+        # Create the selectboxes
+        chosen_year = st.selectbox("Choose Year", end_df['Year'].unique(), index=list(end_df['Year'].unique()).index(last_year))
+        chosen_month = st.selectbox("Choose Month", end_df['Month'].unique(), index=list(end_df['Month'].unique()).index(last_month))
 
-        selected_date=st.date_input("Choose a date", value=max_date, max_value=max_date)
-        st.write("DL data are collected on weekends at Fridays")
-
-        # Filter new_df for entries with the maximum date
-        selected_date_entries = df[df["Date"] == selected_date]
+        # Filter the DataFrame for entries with the chosen year and month
+        selected_date_entries = end_df[(end_df["Year"] == chosen_year) & (end_df["Month"] == chosen_month)]
         st.dataframe(
             selected_date_entries,
             use_container_width=True,
@@ -499,7 +549,7 @@ elif page == "BankWise DL Data":
         # Filter new_df for entries with the maximum date
         max_date_entries = bankwise_df[bankwise_df["Date"] == max_date]
 
-        filtered_bank = st.multiselect("Choose a bank", sorted(bankwise_df['Bank'].unique()),default="Agricultural Development Bank Ltd")
+        filtered_bank = st.multiselect("Choose a bank", sorted(bankwise_df['Bank'].unique()),default="Agricultural Development Bank Ltd",placeholder="Choose Banks for LineCharts")
         st.write("Choose time period for comparison")
 
         # Create two columns layout
@@ -575,7 +625,7 @@ elif page == "BankWise DL Data":
         
     with st.expander("Individual Bank", expanded=True):
         ind_bank_select=st.selectbox("Select a bank", options=sorted(bankwise_df['Bank'].unique()))
-        ind_bank_df=df[df['Bank']==ind_bank_select]
+        ind_bank_df=bankwise_df[bankwise_df['Bank']==ind_bank_select]
         st.dataframe(
             ind_bank_df,
             use_container_width=True,
