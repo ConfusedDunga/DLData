@@ -38,6 +38,7 @@ new_df[numeric_columns] = new_df[numeric_columns].astype(float)
 mask_month=new_df["type"]=="End"
 month_df=new_df[mask_month]
 
+
 mask_week=new_df["type"]=="Week"
 week_df=new_df[mask_week]
 
@@ -318,7 +319,70 @@ elif page == "Weekly DL Data":
 # Monthly Page
 elif page == "Monthly DL Data":
     st.title("Monthly Data")
+    month_df["Yearmonth"] = month_df["Year"].astype(str) + "-" + month_df["Month"].astype(str)
 
+
+    # Layout with two columns for date range selection
+    from_column, to_column = st.columns(2)
+
+    # From Year and Month selection
+    with from_column:
+        from_year_m = st.selectbox("From Year", sorted(month_df['Year'].unique()))
+        from_month_m = st.selectbox("From Month", sorted(month_df['Month'].unique()))
+
+    # To Year and Month selection
+    with to_column:
+        to_year_m = st.selectbox("To Year", sorted(month_df['Year'].unique()), index=len(month_df['Year'].unique()) - 1)
+        to_month_m = st.selectbox("To Month", sorted(month_df['Month'].unique()), index=len(month_df['Month'].unique()) - 1)
+
+    # Find the index where the From Year and Month are first found
+    from_index = month_df.index[(month_df['Year'] == from_year_m) & (month_df['Month'] == from_month_m)].min()
+
+    # Find the index where the To Year and Month are found
+    to_index = month_df.index[(month_df['Year'] == to_year_m) & (month_df['Month'] == to_month_m)].max()
+
+    # Filter the dataframe based on the selected date range
+    filtered_df_monthly = month_df.loc[from_index:to_index]
+
+    # Layout with two columns for displaying data
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("Total Deposit Trend")
+        fig_deposit = px.line(
+            filtered_df_monthly,
+            x="Yearmonth",
+            y="DTOTAL",
+            labels={"DTOTAL": "Total Deposit", "Date": "Date"},
+            line_shape="spline",
+            markers=True
+        )
+        fig_deposit.update_layout(xaxis_title="Date", yaxis_title="Amount in Billions")
+        st.plotly_chart(fig_deposit, use_container_width=True)
+
+    with col2:
+        st.subheader("Total Lending Trend")
+        fig_lending = px.line(
+            filtered_df_monthly,
+            x="Yearmonth",
+            y="LTOTAL",
+            labels={"LTOTAL": "Total Lending", "Date": "Date"},
+            line_shape="spline",
+            markers=True
+        )
+        fig_lending.update_layout(xaxis_title="Date", yaxis_title="Amount in Billions")
+        st.plotly_chart(fig_lending, use_container_width=True)
+
+
+
+
+
+
+
+
+
+
+    st.header("Monthly Growth Comparison (Amount)")
     # Add dropdown for selecting a fiscal year for the bar chart
     fiscal_years = month_df['FY'].unique()
     selected_fy_for_bar = st.selectbox("Select Fiscal Year for Bar Chart", fiscal_years, index=len(fiscal_years)-1)
@@ -370,6 +434,8 @@ elif page == "Monthly DL Data":
 
     st.plotly_chart(fig, use_container_width=True)
 
+    st.header("Monthly Growth Comparison (Percentage)")
+
     # Add multiselect for selecting fiscal years for the line charts
     selected_fys_for_line = st.multiselect("Select Fiscal Years for Line Charts", fiscal_years, default=fiscal_years[1])
 
@@ -401,7 +467,7 @@ elif page == "Monthly DL Data":
                 markers=True,
                 text="DTOTAL Growth"  # Display the values as text
             )
-            fig_dtotal.update_layout(xaxis_title="Month")
+            fig_dtotal.update_layout(xaxis_title="",yaxis_title="%(Percentage)")
             fig_dtotal.update_traces(textposition="middle right", texttemplate='%{text:.2f}%')
             st.plotly_chart(fig_dtotal, use_container_width=True)
 
@@ -417,7 +483,7 @@ elif page == "Monthly DL Data":
                 markers=True,
                 text="LTOTAL Growth"  # Display the values as text
             )
-            fig_ltotal.update_layout(xaxis_title="Month")
+            fig_ltotal.update_layout(xaxis_title="",yaxis_title="%(Percentage)")
             fig_ltotal.update_traces(textposition="middle right", texttemplate='%{text:.2f}%')
             st.plotly_chart(fig_ltotal, use_container_width=True)
     else:
@@ -676,5 +742,126 @@ elif page == "BankWise DL Data":
                 ),
             },
         )
-elif page =="CD Ratio":
+elif page == "CD Ratio":
     st.title("Credit to Deposit Ratio")
+
+    # Create tabs for Monthly and Weekly data
+    tab1, tab2 = st.tabs(["Monthly Data", "Weekly Data"])
+
+    with tab1:
+        st.subheader("Monthly Data")
+        
+        # Layout with two columns
+        col1, col2 = st.columns([1, 1.5])
+        latest_cd = new_df.iloc[-1]['CD'] 
+
+        with col1:
+            st.metric(label=f"As of {new_df['Description'].iloc[-1]} ({new_df['Ndate'].iloc[-1]})", value=f"{latest_cd:.2f}%")
+            month_df_sort = month_df.sort_values(by="Date", ascending=False)
+            st.dataframe(
+                month_df_sort,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "type": None,
+                    "Bank": None,
+                    "Date": "English Date",
+                    "Ndate": "Nepali Date",
+                    "FY": "FY",
+                    "Year": st.column_config.NumberColumn(
+                        "Year",
+                        format="%.0f"
+                    ),
+                    "Month": "Month",
+                    "Week": None,
+                    "DLCY": None,
+                    "DFCY": None,
+                    "DTOTAL": None,
+                    "LLCY": None,
+                    "LFCY": None,
+                    "LTOTAL": None,
+                    "CD": st.column_config.NumberColumn(
+                        "CD Ratio",
+                        format="%.2f%%"
+                    ),
+                },
+                column_order=["FY", "Year", "Month", "CD"]
+            )
+
+        with col2:
+            st.subheader("CD Ratio Over Time")
+            # Filter by Fiscal Year (FY)
+            selected_fy = st.selectbox("Select Fiscal Year", month_df["FY"].unique(), index=(len(month_df["FY"].unique())-1))
+
+            filtered_month_df_cd = month_df[month_df["FY"] == selected_fy]
+
+            fig_cd_ratio = px.line(
+                filtered_month_df_cd,
+                x="Month",
+                y="CD",
+                title=f"CD Ratio Over Time for FY {selected_fy}",
+                line_shape="spline",
+                markers=True
+            )
+            fig_cd_ratio.update_layout(xaxis_title="Date", yaxis_title="CD Ratio (%)")
+
+            st.plotly_chart(fig_cd_ratio, use_container_width=True)
+
+    with tab2:
+        st.subheader("Weekly Data")
+        
+        # Layout with two columns
+        col1, col2 = st.columns([1, 1.5])
+        latest_cd = new_df.iloc[-1]['CD'] 
+
+        with col1:
+            st.metric(label=f"As of {new_df['Description'].iloc[-1]} ({new_df['Ndate'].iloc[-1]})", value=f"{latest_cd:.2f}%")
+            week_df_sort = week_df.sort_values(by="Date", ascending=False)
+            st.dataframe(
+                week_df_sort,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "type": None,
+                    "Bank": None,
+                    "Date": "English Date",
+                    "Ndate": "Nepali Date",
+                    "FY": "FY",
+                    "Year": st.column_config.NumberColumn(
+                        "Year",
+                        format="%.0f"
+                    ),
+                    "Month": "Month",
+                    "Week": "Week",
+                    "DLCY": None,
+                    "DFCY": None,
+                    "DTOTAL": None,
+                    "LLCY": None,
+                    "LFCY": None,
+                    "LTOTAL": None,
+                    "CD": st.column_config.NumberColumn(
+                        "CD Ratio",
+                        format="%.2f%%"
+                    ),
+                },
+                column_order=["FY", "Year", "Month", "Week", "CD"]
+            )
+
+        with col2:
+            st.subheader("CD Ratio Over Time")
+            # Filter by Fiscal Year (FY)
+            selected_fy = st.selectbox("Select Fiscal Year", week_df["FY"].unique(), index=(len(week_df["FY"].unique())-1))
+
+            filtered_week_df_cd = week_df[week_df["FY"] == selected_fy]
+
+            fig_cd_ratio_week = px.line(
+                filtered_week_df_cd,
+                x="Description",
+                y="CD",
+                title=f"CD Ratio Over Time for FY {selected_fy}",
+                line_shape="spline",
+                markers=True
+            )
+            fig_cd_ratio_week.update_layout(xaxis_title="Week", yaxis_title="CD Ratio (%)")
+
+            st.plotly_chart(fig_cd_ratio_week, use_container_width=True)
