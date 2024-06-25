@@ -609,7 +609,7 @@ elif page == "BankWise DL Data":
         )
 
 
-    with st.expander("Compare banks", expanded=True):
+    with st.expander("Compare bankwise data", expanded=True):
         bankwise_df=df[df["type"]=="End"]
         # Find the maximum date in new_df
         max_date = bankwise_df["Date"].max()
