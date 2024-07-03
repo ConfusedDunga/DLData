@@ -818,6 +818,7 @@ elif page == "CD Ratio":
                 month_df_sort,
                 use_container_width=True,
                 hide_index=True,
+                height=447 ,
                 column_config={
                     "type": None,
                     "Bank": None,
@@ -877,6 +878,7 @@ elif page == "CD Ratio":
                 week_df_sort,
                 use_container_width=True,
                 hide_index=True,
+                height=447,
                 column_config={
                     "type": None,
                     "Bank": None,
