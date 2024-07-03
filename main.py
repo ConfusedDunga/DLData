@@ -117,6 +117,62 @@ if page == "Home Page":
     with st.expander("Click here for Monthly PDF Report from NBA",expanded=False):
         st.subheader("Latest Available Monthly PDF Reports")
         st.image(image="latest.png",use_column_width=True)
+    
+    with st.expander("DL Data Comparison", expanded=False):
+        # Layout with two columns for date range selection
+        col_from, col_to = st.columns(2)
+
+        # Get the first and last entries of new_df
+        first_entry = new_df.iloc[0]
+        last_entry = new_df.iloc[-1]
+
+        # From Year, Month, and Week selection
+        with col_from:
+            from_year_new = st.selectbox("From Year", sorted(new_df['Year'].unique()), index=sorted(new_df['Year'].unique()).index(first_entry['Year']), key="from_year_new")
+            from_month_new = st.selectbox("From Month", sorted(new_df['Month'].unique()), index=sorted(new_df['Month'].unique()).index(first_entry['Month']), key="from_month_new")
+            from_week_new = st.selectbox("From Week", sorted(new_df['Week'].unique()), index=sorted(new_df['Week'].unique()).index(first_entry['Week']), key="from_week_new")
+
+        # To Year, Month, and Week selection
+        with col_to:
+            to_year_new = st.selectbox("To Year", sorted(new_df['Year'].unique()), index=sorted(new_df['Year'].unique()).index(last_entry['Year']), key="to_year_new")
+            to_month_new = st.selectbox("To Month", sorted(new_df['Month'].unique()), index=sorted(new_df['Month'].unique()).index(last_entry['Month']), key="to_month_new")
+            to_week_new = st.selectbox("To Week", sorted(new_df['Week'].unique()), index=sorted(new_df['Week'].unique()).index(last_entry['Week']), key="to_week_new")
+
+        # Filter the dataframe based on the selected date range
+        from_index_new = new_df.index[(new_df['Year'] == from_year_new) & (new_df['Month'] == from_month_new) & (new_df['Week'] == from_week_new)].min()
+        to_index_new = new_df.index[(new_df['Year'] == to_year_new) & (new_df['Month'] == to_month_new) & (new_df['Week'] == to_week_new)].max()
+
+        filtered_df_new = new_df.loc[from_index_new:to_index_new]
+
+        # Calculate percentage and value changes
+        dtotal_change_new = (filtered_df_new['DTOTAL'].iloc[-1] - filtered_df_new['DTOTAL'].iloc[0]) / filtered_df_new['DTOTAL'].iloc[0] * 100
+        ltotal_change_new = (filtered_df_new['LTOTAL'].iloc[-1] - filtered_df_new['LTOTAL'].iloc[0]) / filtered_df_new['LTOTAL'].iloc[0] * 100
+        cd_change_new = (filtered_df_new['CD'].iloc[-1] - filtered_df_new['CD'].iloc[0]) / filtered_df_new['CD'].iloc[0] * 100
+
+        # Calculate value changes
+        dtotal_value_change = filtered_df_new['DTOTAL'].iloc[-1] - filtered_df_new['DTOTAL'].iloc[0]
+        ltotal_value_change = filtered_df_new['LTOTAL'].iloc[-1] - filtered_df_new['LTOTAL'].iloc[0]
+        cd_value_change = filtered_df_new['CD'].iloc[-1] - filtered_df_new['CD'].iloc[0]
+
+        # Layout for displaying metrics in three columns
+        
+        metric_col1, metric_col2, metric_col3 = st.columns([1, 1, 1])
+
+        # Row 1: "From" data
+        metric_col1.metric(label="Starting Deposit", value=f"{filtered_df_new['DTOTAL'].iloc[0]:.2f}")
+        metric_col2.metric(label="Starting Lending", value=f"{filtered_df_new['LTOTAL'].iloc[0]:.2f}")
+        metric_col3.metric(label="Starting CD", value=f"{filtered_df_new['CD'].iloc[0]:.2f}%")
+
+        # Row 2: "To" data
+        metric_col1.metric(label="Ending Deposit", value=f"{filtered_df_new['DTOTAL'].iloc[-1]:.2f}")
+        metric_col2.metric(label="Ending Lending", value=f"{filtered_df_new['LTOTAL'].iloc[-1]:.2f}")
+        metric_col3.metric(label="Ending CD", value=f"{filtered_df_new['CD'].iloc[-1]:.2f}%")
+
+        # Row 3: "Change" data
+        metric_col1.metric(label="Deposit Change", value=f"{dtotal_value_change:.2f}", delta=f"{dtotal_change_new:.2f}%")
+        metric_col2.metric(label="Lending Change", value=f"{ltotal_value_change:.2f}", delta=f"{ltotal_change_new:.2f}%")
+        metric_col3.metric(label="CD Change", value=f"{cd_value_change:.2f}", delta=f"{cd_change_new:.2f}%")
+
 
 
 
