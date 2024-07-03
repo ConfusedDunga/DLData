@@ -129,13 +129,13 @@ if page == "Home Page":
         # From Year, Month, and Week selection
         with col_from:
             from_year_new = st.selectbox("From Year", sorted(new_df['Year'].unique()), index=sorted(new_df['Year'].unique()).index(first_entry['Year']), key="from_year_new")
-            from_month_new = st.selectbox("From Month", sorted(new_df['Month'].unique()), index=sorted(new_df['Month'].unique()).index(first_entry['Month']), key="from_month_new")
+            from_month_new = st.selectbox("From Month", new_df['Month'].unique(), index=sorted(new_df['Month'].unique()).index(first_entry['Month']), key="from_month_new")
             from_week_new = st.selectbox("From Week", sorted(new_df['Week'].unique()), index=sorted(new_df['Week'].unique()).index(first_entry['Week']), key="from_week_new")
 
         # To Year, Month, and Week selection
         with col_to:
             to_year_new = st.selectbox("To Year", sorted(new_df['Year'].unique()), index=sorted(new_df['Year'].unique()).index(last_entry['Year']), key="to_year_new")
-            to_month_new = st.selectbox("To Month", sorted(new_df['Month'].unique()), index=sorted(new_df['Month'].unique()).index(last_entry['Month']), key="to_month_new")
+            to_month_new = st.selectbox("To Month",(new_df['Month'].unique()), index=sorted(new_df['Month'].unique()).index(last_entry['Month']), key="to_month_new")
             to_week_new = st.selectbox("To Week", sorted(new_df['Week'].unique()), index=sorted(new_df['Week'].unique()).index(last_entry['Week']), key="to_week_new")
 
         # Filter the dataframe based on the selected date range
