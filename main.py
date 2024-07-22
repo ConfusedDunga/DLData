@@ -435,9 +435,6 @@ elif page == "Monthly DL Data":
 
 
 
-
-
-
     st.header("Monthly Growth Comparison (Amount)")
     # Add dropdown for selecting a fiscal year for the bar chart
     fiscal_years = month_df['FY'].unique()
