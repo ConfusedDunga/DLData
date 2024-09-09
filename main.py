@@ -98,21 +98,12 @@ if page == "Home Page":
     delta_LTOTAL = latest_entry['LTOTAL'] - previous_entry['LTOTAL']
     
     # Display metrics in two rows with three columns each
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     with col1:
-        st.metric(label="Deposits LCY", value=f"{latest_entry['DLCY']:.2f}", delta=f"{delta_DLCY:.2f}")
-    with col2:
-        st.metric(label="Deposits FCY", value=f"{latest_entry['DFCY']:.2f}", delta=f"{delta_DFCY:.2f}")
-    with col3:
         st.metric(label="Total Deposits", value=f"{latest_entry['DTOTAL']:.2f}", delta=f"{delta_DTOTAL:.2f}")
-    
-    col4, col5, col6 = st.columns(3)
-    with col4:
-        st.metric(label="Lending LCY", value=f"{latest_entry['LLCY']:.2f}", delta=f"{delta_LLCY:.2f}")
-    with col5:
-        st.metric(label="Lending FCY", value=f"{latest_entry['LFCY']:.2f}", delta=f"{delta_LFCY:.2f}")
-    with col6:
+    with col2:
         st.metric(label="Total Lending", value=f"{latest_entry['LTOTAL']:.2f}", delta=f"{delta_LTOTAL:.2f}")
+
 
     with st.expander("Click here for Monthly PDF Report from NBA",expanded=False):
         st.subheader("Latest Available Monthly PDF Reports")
