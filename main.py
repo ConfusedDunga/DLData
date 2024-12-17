@@ -107,7 +107,7 @@ if page == "Home Page":
 
     with st.expander("Click here for Monthly PDF Report from NBA",expanded=True):
         st.subheader("Latest Available Monthly PDF Reports")
-        st.image(image="latest.png",use_column_width=True)
+        st.image(image="latest.png",use_container_width=True)
     
     with st.expander("DL Data Comparison", expanded=False):
         # Layout with two columns for date range selection
