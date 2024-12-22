@@ -592,7 +592,7 @@ elif page == "Monthly DL Data":
 
 elif page == "BankWise DL Data":
     st.title("BankWise Data")
-    with st.expander("Click here for latest Monthly DL Data"):
+    with st.expander("Click here for latest Monthly DL Data",expanded=True):
        
         end_df=df[df["type"]=="End"]
         
