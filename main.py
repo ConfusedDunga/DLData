@@ -105,7 +105,7 @@ if page == "Home Page":
         st.metric(label="Total Lending", value=f"{latest_entry['LTOTAL']:.2f}", delta=f"{delta_LTOTAL:.2f}")
 
 
-    with st.expander("Click here for Monthly PDF Report from NBA",expanded=True):
+    with st.expander("Click here for Monthly PDF Report from NBA",expanded=False):
         st.subheader("Latest Available Monthly PDF Reports")
         st.image(image="latest.png",use_container_width=True)
     
