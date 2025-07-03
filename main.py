@@ -77,7 +77,7 @@ page = st.sidebar.radio("Go to", ["Home Page", "Search DL Data", "Weekly DL Data
 
 if page == "Home Page":
     st.title("Deposit and Lending of Commercial Banks")
-    st.subheader("This portal is being discontinued after Shrawan. For latest data, please visit the NBA portal which is currently under Development.")
+    st.subheader("This portal is being discontinued after Shrawan 2082. For latest data, please visit the NBA portal which is currently under Development.")
     st.header(f"As of {new_df['Description'].iloc[-1]} ({new_df['Ndate'].iloc[-1]})")
     st.write("Amounts in Rs (Billions)")
     st.write("Metrics are compared from previous week data")
